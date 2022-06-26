@@ -40,7 +40,7 @@ function Config:init()
         self.url = 'https://cloud.linked-go.com/cloudservice/api'
     end
 
-    self.interval = self.app:getVariable('Refresh Interval')
+    self.interval = self.app:getVariable('Interval')
 
     if self.interval == '' or self.interval < 1 then
         self.interval = 1
@@ -74,7 +74,7 @@ function Config:init()
     -- handling interval
     if not self.interval or self.interval == "" then
         if storedInterval and storedInterval ~= "" then
-            self.app:setVariable("Refresh Interval", storedInterval)
+            self.app:setVariable("Interval", storedInterval)
             self.interval = storedInterval
         else
             self.interval = "1"
