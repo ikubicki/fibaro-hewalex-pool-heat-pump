@@ -1,0 +1,199 @@
+{
+    "name": "Hewalex PCWB",
+    "type": "com.fibaro.temperatureSensor",
+    "apiVersion": "1.2",
+    "initialProperties": {
+        "viewLayout": {
+            "$jason": {
+                "body": {
+                    "header": {
+                        "style": {
+                            "height": "0"
+                        },
+                        "title": "Hewalex PCWB"
+                    },
+                    "sections": {
+                        "items": [
+                            {
+                                "components": [
+                                    {
+                                        "name": "label1",
+                                        "style": {
+                                            "weight": "1.2"
+                                        },
+                                        "text": "Urządzenie niedostępne",
+                                        "type": "label",
+                                        "visible": true
+                                    },
+                                    {
+                                        "style": {
+                                            "weight": "0.5"
+                                        },
+                                        "type": "space"
+                                    }
+                                ],
+                                "style": {
+                                    "weight": "1.2"
+                                },
+                                "type": "vertical"
+                            },
+                            {
+                                "components": [
+                                    {
+                                        "name": "label2",
+                                        "style": {
+                                            "weight": "1.2"
+                                        },
+                                        "text": "---",
+                                        "type": "label",
+                                        "visible": true
+                                    },
+                                    {
+                                        "style": {
+                                            "weight": "0.5"
+                                        },
+                                        "type": "space"
+                                    }
+                                ],
+                                "style": {
+                                    "weight": "1.2"
+                                },
+                                "type": "vertical"
+                            },
+                            {
+                                "components": [
+                                    {
+                                        "name": "label3",
+                                        "style": {
+                                            "weight": "1.2"
+                                        },
+                                        "text": "---",
+                                        "type": "label",
+                                        "visible": true
+                                    },
+                                    {
+                                        "style": {
+                                            "weight": "0.5"
+                                        },
+                                        "type": "space"
+                                    }
+                                ],
+                                "style": {
+                                    "weight": "1.2"
+                                },
+                                "type": "vertical"
+                            },
+                            {
+                                "components": [
+                                    {
+                                        "name": "label4",
+                                        "style": {
+                                            "weight": "1.2"
+                                        },
+                                        "text": "---",
+                                        "type": "label",
+                                        "visible": true
+                                    },
+                                    {
+                                        "style": {
+                                            "weight": "0.5"
+                                        },
+                                        "type": "space"
+                                    }
+                                ],
+                                "style": {
+                                    "weight": "1.2"
+                                },
+                                "type": "vertical"
+                            },
+                            {
+                                "components": [
+                                    {
+                                        "name": "button1",
+                                        "style": {
+                                            "weight": "1.2"
+                                        },
+                                        "text": "Aktualizuj",
+                                        "type": "button",
+                                        "visible": true
+                                    },
+                                    {
+                                        "style": {
+                                            "weight": "0.5"
+                                        },
+                                        "type": "space"
+                                    }
+                                ],
+                                "style": {
+                                    "weight": "1.2"
+                                },
+                                "type": "vertical"
+                            }
+                        ]
+                    }
+                },
+                "head": {
+                    "title": "Hewalex PCWB"
+                }
+            }
+        },
+        "uiCallbacks": [
+            {
+                "callback": "button1Event",
+                "eventType": "onReleased",
+                "name": "button1"
+            }
+        ],
+        "quickAppVariables": [
+            {
+                "name": "Username",
+                "type": "string",
+                "value": "-"
+            },
+            {
+                "name": "Password",
+                "type": "password",
+                "value": "-"
+            }
+        ],
+        "typeTemplateInitialized": true
+    },
+    "files": [
+        {
+            "name": "main",
+            "isMain": true,
+            "isOpen": true,
+            "content": "--[[\n    Hewalex Pool Heat Pump temperature sensor\n    @author ikubicki\n]]\nfunction QuickApp:onInit()\n    self.config = Config:new(self)\n    self.aquatemp = AquaTemp:new(self.config)\n    self.aquatemp:login(true)\n    self.aquatemp:getDeviceCode()\n\n    self.i18n = i18n:new(api.get(\"/settings/info\").defaultLanguage)\n    self:trace('')\n    self:trace(self.i18n:get('name'))\n    self:updateProperty('manufacturer', 'Hewalex')\n    self:updateProperty('model', 'Temperature sensor')\n    self:updateView(\"button1\", \"text\", self.i18n:get('refresh'))\n    self:run()\n    self:updateView('label1', 'text', self.i18n:get('device-unavailable'))\n    self:updateView('label2', 'text', '---')\n    self:updateView('label3', 'text', '---')\n    self:updateView('label4', 'text', '---')\nend\n\n\nfunction QuickApp:run()\n    self:pullDataFromAPI()\n    local interval = self.config:getTimeoutInterval()\n    if (interval > 0) then\n        fibaro.setTimeout(interval, function() self:run() end)\n    end\nend\n\nfunction QuickApp:button1Event()\n    self:pullDataFromAPI()\nend\n\nfunction QuickApp:pullDataFromAPI()\n    self:updateView(\"button1\", \"text\", self.i18n:get('please-wait'))\n    local draw = function (parameters)\n\n        if not parameters['H03'] then\n            self:updateView('label1', 'text', self.i18n:get('device-unavailable'))\n            self:updateView('label2', 'text', '---')\n            self:updateView('label3', 'text', '---')\n            self:updateView('label4', 'text', '---')\n            return\n        end\n        local unit = 'C'\n        local temp_inlet = tonumber(parameters['T02'])\n        local temp_outlet = tonumber(parameters['T03'])\n        local temp_set = tonumber(parameters['R02'])\n        local temp_ambient = tonumber(parameters['T05'])\n        local power = tonumber(parameters['Power'])\n        local mode = tonumber(parameters['Mode'])\n        if parameters['H03'] == 1 then\n            unit = 'F'\n        end\n        -- QuickApp:debug('parameters = ', json.encode(parameters))\n\n        self:updateProperty('unit', unit)\n        self:updateProperty('value', temp_inlet)\n        if power > 0 then\n            self:updateView('label1', 'text', string.format(self.i18n:get('temperature-set'), temp_set, unit))\n        else\n            self:updateView('label1', 'text', self.i18n:get('device-off'))\n        end\n        self:updateView('label2', 'text', string.format(self.i18n:get('temperature-inlet'), temp_inlet, unit))\n        self:updateView('label3', 'text', string.format(self.i18n:get('temperature-outlet'), temp_outlet, unit))\n        self:updateView('label4', 'text', string.format(self.i18n:get('temperature-ambient'), temp_ambient, unit))\n\n        self:updateView(\"button1\", \"text\", self.i18n:get('refresh'))\n        self:trace(self.i18n:get('device-updated'))\n    end\n    local err = function()\n        self:updateView('label1', 'text', self.i18n:get('device-unavailable'))\n        self:updateView('label2', 'text', '---')\n        self:updateView('label3', 'text', '---')\n        self:updateView('label4', 'text', '---')\n    end\n\n    self.aquatemp:getParameters(draw, err)\nend\n"
+        },
+        {
+            "name": "Config",
+            "isMain": false,
+            "isOpen": false,
+            "content": "--[[\nConfiguration handler\n@author ikubicki\n]]\nclass 'Config'\n\nfunction Config:new(app)\n    self.app = app\n    self:init()\n    return self\nend\n\nfunction Config:getUsername(alternative)\n    return self.username\nend\n\nfunction Config:getPassword()\n    return self.password\nend\n\nfunction Config:getUrl()\n    return self.url\nend\n\nfunction Config:getTimeoutInterval()\n    return tonumber(self.interval) * 60000\nend\n\n--[[\nThis function takes variables and sets as global variables if those are not set already.\nThis way, adding other devices might be optional and leaves option for users, \nwhat they want to add into HC3 virtual devices.\n]]\nfunction Config:init()\n    self.username = self.app:getVariable('Username')\n    self.password = self.app:getVariable('Password')\n    self.url = self.app:getVariable('URL')\n\n    if string.len(self.url) < 1 then\n        self.url = 'https://cloud.linked-go.com/cloudservice/api'\n    end\n\n    self.interval = self.app:getVariable('Refresh Interval')\n\n    if self.interval == '' or self.interval < 1 then\n        self.interval = 1\n    end\n\n    local storedUsername = Globals:get('aquatemp_username', '')\n    local storedPassword = Globals:get('aquatemp_password', '')\n    local storedUrl = Globals:get('aquatemp_url', '')\n    local storedInterval = Globals:get('aquatemp_interval', '')\n    -- handling username\n    if string.len(self.username) < 4 and string.len(storedUsername) > 3 then\n        self.app:setVariable(\"Username\", storedUsername)\n        self.username = storedUsername\n    elseif (storedUsername == '' and self.username) then -- or storedUsername ~= self.username then\n        Globals:set('aquatemp_username', self.username)\n    end\n    -- handling password\n    if string.len(self.password) < 4 and string.len(storedPassword) > 3 then\n        self.app:setVariable(\"Password\", storedPassword)\n        self.password = storedPassword\n    elseif (storedPassword == '' and self.password) then -- or storedPassword ~= self.password then\n        Globals:set('aquatemp_password', self.password)\n    end\n    -- handling URL\n    if string.len(self.url) < 4 and string.len(storedUrl) > 3 then\n        self.app:setVariable(\"URL\", storedUrl)\n        self.url = storedUrl\n    elseif (storedUrl == '' and self.url) then -- or storedUrl ~= self.url then\n        Globals:set('aquatemp_url', self.url)\n    end\n    -- handling interval\n    if not self.interval or self.interval == \"\" then\n        if storedInterval and storedInterval ~= \"\" then\n            self.app:setVariable(\"Refresh Interval\", storedInterval)\n            self.interval = storedInterval\n        else\n            self.interval = \"1\"\n        end\n    end\n    if (storedInterval == \"\" and self.interval ~= \"\") then -- or storedInterval ~= self.interval then\n        Globals:set('aquatemp_interval', self.interval)\n    end\nend"
+        },
+        {
+            "name": "AquaTemp",
+            "isMain": false,
+            "isOpen": false,
+            "content": "--[[\nAquaTemp SDK\n@author ikubicki\n]]\nclass 'AquaTemp'\n\nAquaTemp.debug = false\n\nfunction AquaTemp:new(config)\n    self.username = config:getUsername()\n    self.password = config:getPassword()\n    self.http = HTTPClient:new({\n        baseUrl = config:getUrl()\n    })\n    return self\nend\n\nfunction AquaTemp:login(loadDevice, fail)\n    local timestamp = os.time(os.date(\"!*t\"))\n    -- QuickApp:debug('aquatemp_xtoken=', Globals:get('aquatemp_xtoken'))\n    -- QuickApp:debug('aquatemp_xtoken_time=', Globals:get('aquatemp_xtoken_time'))\n    -- QuickApp:debug('Session life time=', timestamp - Globals:get('aquatemp_xtoken_time', 0))\n    if timestamp - Globals:get('aquatemp_xtoken_time', 0) < 1 and string.len(Globals:get('aquatemp_xtoken', '')) > 0 then\n        QuickApp:debug('Reusing existing xtoken')\n        return Globals:get('aquatemp_xtoken', '')\n    end\n\n    local data = {\n        user_name = self.username,\n        password = self.password,\n        type = 2\n    }\n    local headers = {\n        [\"Content-Type\"] = \"application/json; charset=utf-8\"\n    }\n    local error = function(err)\n        QuickApp:error('Unable to connect to remote server [' .. response.status .. ']')\n        QuickApp:debug(err)\n        if fail ~= nil then\n            fail(err)\n        end\n    end\n    local success = function(response)\n        if response.status > 400 then\n            QuickApp:error('login: Unable to connect to remote server [' .. response.status .. ']')\n            return\n        end\n        local data = string.gsub(response.data, \"null\", \"false\")\n        local jsonData = json.decode(data)\n        if jsonData.object_result and jsonData.object_result[\"x-token\"] then\n            Globals:set('aquatemp_xtoken', jsonData.object_result[\"x-token\"])\n            Globals:set('aquatemp_xtoken_time', timestamp)\n            if loadDevice then\n                AquaTemp:getDeviceCode()\n            end\n        else\n            QuickApp:error('login: Malformed response [' .. json.encode(jsonData) .. ']')\n        end\n    end\n    self.http:post('/app/user/login.json', data, success, error, headers)\n    return ''\nend\n\nfunction AquaTemp:getDeviceCode(fail)\n    if string.len(Globals:get('aquatemp_device', '')) > 0 then\n        return Globals:get('aquatemp_device', '')\n    end\n    local xtoken = Globals:get('aquatemp_xtoken', '')\n    if xtoken == '' then\n        -- QuickApp:debug('getDeviceCode: Not authorized')\n        return ''\n    end\n\n    local headers = {\n        [\"Content-Type\"] = \"application/json; charset=utf-8\",\n        [\"x-token\"] = Globals:get('aquatemp_xtoken', '')\n    }\n\n    local error = function(err)\n        QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')\n        QuickApp:debug(err)\n        if fail ~= nil then\n            fail(err)\n        end\n    end\n    local success = function(response)\n        if response.status > 400 then\n            QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')\n            return\n        end\n        local data = string.gsub(response.data, \"null\", \"false\")\n        local jsonData = json.decode(data)\n        if jsonData.object_result and jsonData.object_result[1].device_code then\n            Globals:set('aquatemp_device', jsonData.object_result[1].device_code)\n        else\n            QuickApp:error('getDeviceCode: Malformed response [' .. json.encode(jsonData) .. ']')\n        end\n    end\n    self.http:get('/app/device/deviceList.json', success, error, headers)\n    return ''\nend\n\nfunction AquaTemp:getParameters(callback, fail)\n\n    local xtoken = Globals:get('aquatemp_xtoken', '')\n    local device = Globals:get('aquatemp_device', '')\n    if xtoken == '' then\n        QuickApp:debug('getParameters: Not authorized')\n        return {}\n    end\n    if device == '' then\n        QuickApp:debug('getParameters: No device')\n        return {}\n    end\n    \n    local data = {\n        device_code = device,\n        protocal_codes = { \"Power\", \"Mode\", \"T02\", \"T03\", \"T05\", \"T12\", \"R02\", \"R10\", \"R11\", \"H02\", \"H03\" }\n    }\n    local headers = {\n        [\"Content-Type\"] = \"application/json; charset=utf-8\",\n        [\"x-token\"] = Globals:get('aquatemp_xtoken', '')\n    }\n\n    local error = function(err)\n        QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')\n        QuickApp:debug(err)\n        if fail ~= nil then\n            fail(err)\n        end\n    end\n    local success = function(response)\n        if response.status > 400 then\n            QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')\n            if callback ~= nil then\n                fail(response)\n            end\n            return ''\n        end\n        local data = string.gsub(response.data, \"null\", \"false\")\n        local jsonData = json.decode(data)\n        local parameters = {}\n        if jsonData and jsonData.object_result then\n            for _, param in pairs(jsonData.object_result) do\n                parameters[param.code] = param.value\n            end\n        end\n        if callback ~= nil then\n            callback(parameters)\n        end\n    end\n    self.http:post('/app/device/getDataByCode.json', data, success, error, headers)\nend"
+        },
+        {
+            "name": "Globals",
+            "isMain": false,
+            "isOpen": false,
+            "content": "--[[\nGlobal variables handler\n@author ikubicki\n]]\nclass 'Globals'\n\nfunction Globals:get(name, alternative)\n    local response = api.get('/globalVariables/' .. name)\n    if response then\n        local char = string.sub(response.value, 1, 1)\n        if char == '{' or char == '\"' then\n            return json.decode(response.value)\n        end\n        return response.value\n    end\n    return alternative\nend\n\nfunction Globals:set(name, value)\n    local response = api.put('/globalVariables/' .. name, {\n        name = name,\n        value = json.encode(value)\n    })\n    if not response then\n        response = api.post('/globalVariables', {\n            name = name,\n            value = json.encode(value)\n        })\n        \n    end\n    if response ~= nil then\n        if response.type == 'ERROR' then\n            QuickApp:error('GLOBALS ERROR[' .. response.reason .. ']:', response.message)\n        end\n    end\nend"
+        },
+        {
+            "name": "HTTPClient",
+            "isMain": false,
+            "isOpen": false,
+            "content": "--[[\nHTTPClient wrapper\n@author ikubicki\n]]\nclass 'HTTPClient'\n\nfunction HTTPClient:new(options)\n    if not options then\n        options = {}\n    end\n    self.options = options\n    return self\nend\n\nfunction HTTPClient:get(url, success, error, headers)\n    local client = net.HTTPClient({timeout = 10000})\n    if not headers then\n        headers = {}\n    end\n    client:request(self:url(url), self:requestOptions(success, error, 'GET', nil, headers)) \nend\n\nfunction HTTPClient:post(url, data, success, error, headers)\n    local client = net.HTTPClient({timeout = 10000})\n    if not headers then\n        headers = {}\n    end\n    client:request(self:url(url), self:requestOptions(success, error, 'POST', data, headers)) \nend\n\nfunction HTTPClient:postForm(url, data, success, error, headers)\n    local client = net.HTTPClient({timeout = 10000})\n    if not headers then\n        headers = {}\n    end\n    headers[\"Content-Type\"] = 'application/x-www-form-urlencoded;charset=UTF-8'\n    client:request(self:url(url), self:requestOptions(success, error, 'POST', data, headers, true)) \nend\n\nfunction HTTPClient:put(url, data, success, error, headers)\n    local client = net.HTTPClient({timeout = 10000})\n    client:request(self:url(url), self:requestOptions(success, error, 'PUT', data, headers)) \nend\n\nfunction HTTPClient:delete(url, success, error, headers)\n    local client = net.HTTPClient({timeout = 10000})\n    if not headers then\n        headers = {}\n    end\n    client:request(self:url(url), self:requestOptions(success, error, 'DELETE', nil, headers)) \nend\n\nfunction HTTPClient:url(url)\n    if (string.sub(url, 0, 4) == 'http') then\n        return url\n    end\n    if not self.options.baseUrl then\n        self.options.baseUrl = 'http://localhost'\n    end\n    return self.options.baseUrl .. tostring(url)\nend\n\nfunction HTTPClient:requestOptions(success, error, method, data, headers, isFormData)\n    if error == nil then\n        error = function (error)\n            QuickApp:error(json.encode(error))\n        end\n    end\n    if method == nil then\n        method = 'GET'\n    end\n    local options = {\n        checkCertificate = false,\n        method = method,\n        headers = headers,\n    }\n    if data ~= nil then\n        if isFormData then\n            options.data = ''\n            for key, value in pairs(data) do\n                if string.len(options.data) > 0 then \n                    options.data = options.data .. '&'\n                end\n                options.data = options.data .. key .. '=' .. value\n            end\n        elseif type(data) == 'string' then\n            options.data = data\n        else\n            options.data = json.encode(data)\n        end\n    end\n    return {\n        options = options,\n        success = success,\n        error = error\n    }\nend"
+        },
+        {
+            "name": "I18n",
+            "isMain": false,
+            "isOpen": false,
+            "content": "--[[\nInternationalization tool\n@author ikubicki\n]]\nclass 'i18n'\n\nfunction i18n:new(langCode)\n    self.phrases = phrases[langCode]\n    return self\nend\n\nfunction i18n:get(key)\n    if self.phrases[key] then\n        return self.phrases[key]\n    end\n    return key\nend\n\nphrases = {\n    pl = {\n        ['name'] = 'Hewalex PCWB czujnik temperatury',\n        ['refresh'] = 'Aktualizuj',\n        ['please-wait'] = 'Proszę czekać...',\n        ['device-updated'] = 'Zaktualizowano dane czujnika',\n        ['device-unavailable'] = 'Urządzenie niedostepne',\n        ['device-off'] = 'Urządzenie wyłączone',\n        ['temperature-set'] = 'Temperatura grzania %.1fº%s',\n        ['temperature-inlet'] = 'Temperatura na wejściu %.1fº%s',\n        ['temperature-outlet'] = 'Temperatura na wyjściu %.1fº%s',\n        ['temperature-ambient'] = 'Temperatura otoczenia %.1fº%s',\n    },\n    en = {\n        ['name'] = 'Hewalex Pool Heat Pump temperature sensor',\n        ['refresh'] = 'Refresh data',\n        ['please-wait'] = 'Please wait...',\n        ['device-updated'] = 'Temperature sensor updated',\n        ['device-unavailable'] = 'Device unavailable',\n        ['device-off'] = 'Device turned off',\n        ['temperature-set'] = 'Heating temperature set to %.1fº%s',\n        ['temperature-inlet'] = 'Inlet temperature %.1fº%s',\n        ['temperature-outlet'] = 'Outlet temperature %.1fº%s',\n        ['temperature-ambient'] = 'Ambient temperature %.1fº%s',\n    },\n    de = {\n        ['name'] = 'Hewalex Poolwärmepumpe temperatursensor',\n        ['refresh'] = 'Aktualisieren',\n        ['please-wait'] = 'Ein moment bitte...',\n        ['device-updated'] = 'Temperatursensor aktualisiert',\n        ['device-unavailable'] = 'Gerät nicht verfügbar',\n        ['device-off'] = 'Gerät ausgeschaltet',\n        ['temperature-set'] = 'Heiztemperatur eingestellt auf %.1fº%s',\n        ['temperature-inlet'] = 'Einlasstemperatur %.1fº%s',\n        ['temperature-outlet'] = 'Austrittstemperatur %.1fº%s',\n        ['temperature-ambient'] = 'Umgebungstemperatur %.1fº%s',\n    }\n}"
+        }
+    ]
+}
