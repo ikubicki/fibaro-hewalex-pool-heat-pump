@@ -12,4 +12,4 @@ Data updates every 1 minute by default.
 
 ### Optional values
 
-`Refresh Interval` - number of minutes defining how often data should be refreshed. This value will be automatically populated on initialization of quick application.
+`Interval` - number of minutes defining how often data should be refreshed. This value will be automatically populated on initialization of quick application.
