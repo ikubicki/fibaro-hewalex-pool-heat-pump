@@ -1,4 +1,4 @@
-# Hewalex PCWB QuickApp for FIbaro
+# Hewalex PCWB QuickApp for Fibaro
 
 This quick application creates temperature sensor for pool heat pump manufactured by Hewalex. It captures inlet temperature and displays extra information in the widget
 
