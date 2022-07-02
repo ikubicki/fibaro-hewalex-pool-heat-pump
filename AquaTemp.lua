@@ -84,7 +84,7 @@ function AquaTemp:getDeviceCode(fail)
         end
     end
     local success = function(response)
-        if response.status > 400 then
+        if response.status >= 400 then
             QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')
             return
         end
@@ -130,9 +130,12 @@ function AquaTemp:getParameters(callback, fail)
         end
     end
     local success = function(response)
-        if response.status > 400 then
+        if response.status >= 400 then
             QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')
-            if callback ~= nil then
+            Globals:set('aquatemp_xtoken', '')
+            Globals:set('aquatemp_xtoken_time', '')
+            AquaTemp:login(true)
+            if fail ~= nil then
                 fail(response)
             end
             return ''
