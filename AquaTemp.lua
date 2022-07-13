@@ -20,7 +20,7 @@ function AquaTemp:login(loadDevice, fail)
     -- QuickApp:debug('aquatemp_xtoken=', Globals:get('aquatemp_xtoken'))
     -- QuickApp:debug('aquatemp_xtoken_time=', Globals:get('aquatemp_xtoken_time'))
     -- QuickApp:debug('Session life time=', timestamp - Globals:get('aquatemp_xtoken_time', 0))
-    if timestamp - Globals:get('aquatemp_xtoken_time', 0) < 1 and string.len(Globals:get('aquatemp_xtoken', '')) > 0 then
+    if timestamp - Globals:get('aquatemp_xtoken_time', 0) > 0 and string.len(Globals:get('aquatemp_xtoken', '')) > 0 then
         QuickApp:debug('Reusing existing xtoken')
         return Globals:get('aquatemp_xtoken', '')
     end
@@ -49,7 +49,7 @@ function AquaTemp:login(loadDevice, fail)
         local jsonData = json.decode(data)
         if jsonData.object_result and jsonData.object_result["x-token"] then
             Globals:set('aquatemp_xtoken', jsonData.object_result["x-token"])
-            Globals:set('aquatemp_xtoken_time', timestamp)
+            Globals:set('aquatemp_xtoken_time', timestamp + 43200)
             if loadDevice then
                 AquaTemp:getDeviceCode()
             end
