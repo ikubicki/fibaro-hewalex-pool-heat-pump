@@ -20,7 +20,7 @@ function AquaTemp:login(loadDevice, fail)
     -- QuickApp:debug('aquatemp_xtoken=', Globals:get('aquatemp_xtoken'))
     -- QuickApp:debug('aquatemp_xtoken_time=', Globals:get('aquatemp_xtoken_time'))
     -- QuickApp:debug('Session life time=', timestamp - Globals:get('aquatemp_xtoken_time', 0))
-    if timestamp - Globals:get('aquatemp_xtoken_time', 0) > 0 and string.len(Globals:get('aquatemp_xtoken', '')) > 0 then
+    if Globals:get('aquatemp_xtoken_time') ~= '' and timestamp - Globals:get('aquatemp_xtoken_time', 0) > 0 and string.len(Globals:get('aquatemp_xtoken', '')) > 0 then
         QuickApp:debug('Reusing existing xtoken')
         return Globals:get('aquatemp_xtoken', '')
     end
@@ -34,14 +34,16 @@ function AquaTemp:login(loadDevice, fail)
         ["Content-Type"] = "application/json; charset=utf-8"
     }
     local error = function(err)
-        QuickApp:error('Unable to connect to remote server [' .. response.status .. ']')
+        QuickApp:error('Unable to connect to remote server')
         QuickApp:debug(err)
         if fail ~= nil then
-            fail(err)
+            fail({
+                code = 500
+            })
         end
     end
     local success = function(response)
-        if response.status > 400 then
+        if response.status >= 400 then
             QuickApp:error('login: Unable to connect to remote server [' .. response.status .. ']')
             return
         end
@@ -57,6 +59,8 @@ function AquaTemp:login(loadDevice, fail)
             QuickApp:error('login: Malformed response [' .. json.encode(jsonData) .. ']')
         end
     end
+    -- QuickApp:debug(json.encode(headers))
+    -- QuickApp:debug(json.encode(data))
     self.http:post('/app/user/login.json', data, success, error, headers)
     return ''
 end
@@ -67,7 +71,12 @@ function AquaTemp:getDeviceCode(fail)
     end
     local xtoken = Globals:get('aquatemp_xtoken', '')
     if xtoken == '' then
-        -- QuickApp:debug('getDeviceCode: Not authorized')
+        QuickApp:debug('getDeviceCode: Not authorized')
+        if fail ~= nil then
+            fail({
+                code = 401
+            })
+        end
         return ''
     end
 
@@ -77,16 +86,26 @@ function AquaTemp:getDeviceCode(fail)
     }
 
     local error = function(err)
-        QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')
+        QuickApp:error('getDeviceCode: Unable to connect to remote server.')
         QuickApp:debug(err)
         if fail ~= nil then
-            fail(err)
+            fail({
+                code = 500
+            })
         end
     end
     local success = function(response)
         if response.status >= 400 then
             QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')
-            return
+            Globals:set('aquatemp_xtoken', '')
+            Globals:set('aquatemp_xtoken_time', 0)
+            AquaTemp:login(true)
+            if fail ~= nil then
+                fail({
+                    code = response.status
+                })
+            end
+            return ''
         end
         local data = string.gsub(response.data, "null", "false")
         local jsonData = json.decode(data)
@@ -96,6 +115,7 @@ function AquaTemp:getDeviceCode(fail)
             QuickApp:error('getDeviceCode: Malformed response [' .. json.encode(jsonData) .. ']')
         end
     end
+    -- QuickApp:debug(json.encode(headers))
     self.http:get('/app/device/deviceList.json', success, error, headers)
     return ''
 end
@@ -106,10 +126,21 @@ function AquaTemp:getParameters(callback, fail)
     local device = Globals:get('aquatemp_device', '')
     if xtoken == '' then
         QuickApp:debug('getParameters: Not authorized')
+        AquaTemp:login()
+        if fail ~= nil then
+            fail({
+                code = 401
+            })
+        end
         return {}
     end
     if device == '' then
         QuickApp:debug('getParameters: No device')
+        if fail ~= nil then
+            fail({
+                code = 404
+            })
+        end
         return {}
     end
     
@@ -123,20 +154,25 @@ function AquaTemp:getParameters(callback, fail)
     }
 
     local error = function(err)
-        QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')
+        QuickApp:error('getParameters: Unable to connect to remote server')
         QuickApp:debug(err)
         if fail ~= nil then
-            fail(err)
+            fail({
+                code = 500
+            })
         end
     end
     local success = function(response)
-        if response.status >= 400 then
-            QuickApp:error('getDeviceCode: Unable to connect to remote server [' .. response.status .. ']')
+        if response.status > 400 then
+            QuickApp:error('getParameters: Unable to connect to remote server [' .. response.status .. ']')
             Globals:set('aquatemp_xtoken', '')
-            Globals:set('aquatemp_xtoken_time', '')
-            AquaTemp:login(true)
+            Globals:set('aquatemp_xtoken_time', 0)
+            AquaTemp:login()
+            -- QuickApp:debug(response.data)
             if fail ~= nil then
-                fail(response)
+                fail({
+                    code = response.status
+                })
             end
             return ''
         end
@@ -148,9 +184,12 @@ function AquaTemp:getParameters(callback, fail)
                 parameters[param.code] = param.value
             end
         end
+        -- QuickApp:debug(json.encode(parameters))
         if callback ~= nil then
             callback(parameters)
         end
     end
+    -- QuickApp:debug(json.encode(headers))
+    -- QuickApp:debug(json.encode(data))
     self.http:post('/app/device/getDataByCode.json', data, success, error, headers)
 end

@@ -38,7 +38,7 @@ function QuickApp:pullDataFromAPI()
     self:updateView("button1", "text", self.i18n:get('please-wait'))
     local draw = function (parameters)
 
-        if not parameters['H03'] then
+        if not parameters['T02'] then
             self:updateView('label1', 'text', self.i18n:get('device-unavailable'))
             self:updateView('label2', 'text', '---')
             self:updateView('label3', 'text', '---')
@@ -71,11 +71,12 @@ function QuickApp:pullDataFromAPI()
         self:updateView("button1", "text", self.i18n:get('refresh'))
         self:trace(self.i18n:get('device-updated'))
     end
-    local err = function()
-        self:updateView('label1', 'text', self.i18n:get('device-unavailable'))
+    local err = function(data)
+        self:updateView('label1', 'text', string.format(self.i18n:get('device-error'), data.code))
         self:updateView('label2', 'text', '---')
         self:updateView('label3', 'text', '---')
         self:updateView('label4', 'text', '---')
+        self:updateView("button1", "text", self.i18n:get('refresh'))
     end
 
     self.aquatemp:getParameters(draw, err)
