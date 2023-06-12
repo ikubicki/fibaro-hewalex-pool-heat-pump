@@ -43,7 +43,8 @@ phrases = {
         ['t1'] = 'Temperatura nastawiona: %.1fº%s',
         ['t2'] = 'Temperatura wejściowa: %.1fº%s',
         ['t3'] = 'Temperatura wyjściowa: %.1fº%s',
-        ['t4'] = 'Temperatura otoczenia: %.1fº%s'
+        ['t4'] = 'Temperatura otoczenia: %.1fº%s',
+        ['fault'] = 'Pompa zgłosiła błąd: %s'
     },
     en = {
         ['name'] = 'Hewalex Pool Heat Pump thermostat',
@@ -68,6 +69,7 @@ phrases = {
         ['t1'] = 'Setpoint temperature: %.1f º%s',
         ['t2'] = 'Inlet temperature: %.1f º%s',
         ['t3'] = 'Outlet temperature: %.1f º%s',
-        ['t4'] = 'Ambient temperature: %.1f º%s'
+        ['t4'] = 'Ambient temperature: %.1f º%s',
+        ['fault'] = 'Pump fault: %s'
     }
 }

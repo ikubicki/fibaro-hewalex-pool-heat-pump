@@ -133,12 +133,13 @@ function AquaTemp:setMute(mute, callback, fail)
     AquaTemp:auth(authCallback)
 end
 
-
 -- pass: 022
 function AquaTemp:translateProperties(properties)
     local newProperties = {
         temperature_unit = "C",
     }
+    -- if properties["O06"] ~= nil then newProperties["pressure"] = properties["T02"] end
+    -- "code": "2074", "value": "0000000000000000" -> 0000001000000000 (E03)
     if properties["T02"] ~= nil then newProperties["inlet_temperature"] = properties["T02"] end
     if properties["T03"] ~= nil then newProperties["outlet_temperature"] = properties["T03"] end
     if properties["T04"] ~= nil then newProperties["coil_temperature"] = properties["T04"] end

@@ -86,6 +86,7 @@ function QuickApp:onInit()
     self:updateProperty('model', 'Pool water heat pump')
 
     self.childrenIDs = {}
+    self.powerStatus = nil
 
     -- set supported modes for thermostat
     self:updateProperty("supportedThermostatModes", {"Off", "Heat", "Silent"})
@@ -168,7 +169,6 @@ function QuickApp:updateDevices()
             self:updateProperty("dead", true)
             self:updateProperty("deadReason", "Device offline")
             self:updateLabel(string.format(self.i18n:get('device-error'), 'ERROR'))
-            -- @todo fault handling
             self:updateLabel(self.i18n:get('device-unavailable'))
 
             self.childDevices[self.childrenIDs[1]]:setDead(true, "Device offline")
@@ -180,6 +180,9 @@ function QuickApp:updateDevices()
             self:updateProperty("deadReason", "")
             self:updateLabel(string.format(self.i18n:get('last-update'), os.date('%Y-%m-%d %H:%M:%S')))
 
+            local powerChange = (self.powerStatus == data["power"])
+            self.powerStatus = data["power"]
+
             if data["power"] == "0" then
                 self:ui_setMode("Off")
                 self:updateLabel(self.i18n:get('device-off'))
@@ -188,18 +191,27 @@ function QuickApp:updateDevices()
             else
                 self:ui_setMode("Heat")
             end
-            
+            if data["is_fault"] then
+                -- @todo fault message handling
+                self:updateLabel(string.format(self.i18n:get('last-update'), '<unknown>'))
+            end
             self.childDevices[self.childrenIDs[1]]:setDead(false, "")
-            self.childDevices[self.childrenIDs[1]]:setUnit(data["temperature_unit"])
-            self.childDevices[self.childrenIDs[1]]:setValue(data["inlet_temperature"])
-            self:updateT2(data["inlet_temperature"])
             self.childDevices[self.childrenIDs[2]]:setDead(false, "")
-            self.childDevices[self.childrenIDs[2]]:setUnit(data["temperature_unit"])
-            self.childDevices[self.childrenIDs[2]]:setValue(data["outlet_temperature"])
-            self:updateT3(data["outlet_temperature"])
             self.childDevices[self.childrenIDs[3]]:setDead(false, "")
-            self.childDevices[self.childrenIDs[3]]:setUnit(data["temperature_unit"])
-            self.childDevices[self.childrenIDs[3]]:setValue(data["ambient_temperature"])
+            if data["power"] == "1" then
+                self.childDevices[self.childrenIDs[1]]:setUnit(data["temperature_unit"])
+                self.childDevices[self.childrenIDs[1]]:setValue(data["inlet_temperature"])
+                self.childDevices[self.childrenIDs[2]]:setUnit(data["temperature_unit"])
+                self.childDevices[self.childrenIDs[2]]:setValue(data["outlet_temperature"])
+                self.childDevices[self.childrenIDs[3]]:setUnit(data["temperature_unit"])
+                self.childDevices[self.childrenIDs[3]]:setValue(data["ambient_temperature"]) 
+            elseif powerChange then
+                self.childDevices[self.childrenIDs[1]]:setValue(0)
+                self.childDevices[self.childrenIDs[2]]:setValue(0)
+                self.childDevices[self.childrenIDs[3]]:setValue(0) 
+            end
+            self:updateT2(data["inlet_temperature"])
+            self:updateT3(data["outlet_temperature"])
             self:updateT4(data["ambient_temperature"])
         end
         self:updateProperty("unit", data["temperature_unit"])
