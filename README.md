@@ -7,9 +7,11 @@ It does not allow to control timers. You may automate that using HC3 scenes.
 
 Data updates every 30 seconds by default.
 
-### ATTENTION
+### **ATTENTION**
 
-**I take no responsibility for using this application. You're doing it on your own risk!**
+**I take no responsibility for using this software. You're doing it on your own risk!**
+
+Combining electrical devices and water is dangerous. This software is designed to help control electronic device, not protect anyone from dangers.
 
 ## Configuration
 
