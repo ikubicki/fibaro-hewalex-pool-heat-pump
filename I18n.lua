@@ -5,6 +5,9 @@ Internationalization tool
 class 'i18n'
 
 function i18n:new(langCode)
+    if phrases[langCode] == nil then
+        langCode = "en"
+    end
     self.phrases = phrases[langCode]
     return self
 end
@@ -18,42 +21,55 @@ end
 
 phrases = {
     pl = {
-        ['name'] = 'Hewalex PCWB czujnik temperatury',
-        ['refresh'] = 'Aktualizuj',
-        ['please-wait'] = 'Proszę czekać...',
-        ['device-updated'] = 'Zaktualizowano dane czujnika',
+        ['name'] = 'Termostat Hewalex PCWB',
+        ['refresh'] = 'Aktualizuj dane',
+        ['refreshing'] = 'Proszę czekać...',
+        ['device-updated'] = 'Zaktualizowano dane',
         ['device-unavailable'] = 'Urządzenie niedostepne',
+        ['last-update'] = 'Ostatnia aktualizacja: %s',
         ['device-off'] = 'Urządzenie wyłączone',
         ['device-error'] = 'Błąd urządzenia: %s',
-        ['temperature-set'] = 'Temperatura grzania %.1fº%s',
-        ['temperature-inlet'] = 'Temperatura na wejściu %.1fº%s',
-        ['temperature-outlet'] = 'Temperatura na wyjściu %.1fº%s',
-        ['temperature-ambient'] = 'Temperatura otoczenia %.1fº%s',
+
+        ['search-devices'] = 'Szukaj urządzeń',
+        ['searching-devices'] = 'Szukam...',
+        ['not-configured'] = 'Urządzenie nie skonfigurowane',
+        ['check-logs'] = 'Zakończono wyszukiwanie. Sprawdź logi tego urządzenia: %s',
+        ['search-row-device'] = '__ URZĄDZENIE %s (# %s) - STAN: %s',
+        ['assigning-device'] = 'Automatycznie przypisano kod urządzenia: %s',
+
+        ['device1-label'] = 'Temperatura wejściowa',
+        ['device2-label'] = 'Temperatura wyjściowa',
+        ['device3-label'] = 'Temperatura otoczenia',
+        ['t1'] = 'Temperatura nastawiona: %.1fº%s',
+        ['t2'] = 'Temperatura wejściowa: %.1fº%s',
+        ['t3'] = 'Temperatura wyjściowa: %.1fº%s',
+        ['t4'] = 'Temperatura otoczenia: %.1fº%s',
+        ['fault'] = 'Pompa zgłosiła błąd: %s'
     },
     en = {
-        ['name'] = 'Hewalex Pool Heat Pump temperature sensor',
+        ['name'] = 'Hewalex Pool Heat Pump thermostat',
         ['refresh'] = 'Refresh data',
-        ['please-wait'] = 'Please wait...',
+        ['refreshing'] = 'Please wait...',
         ['device-updated'] = 'Temperature sensor updated',
         ['device-unavailable'] = 'Device unavailable',
+        ['last-update'] = 'Last update: %s',
         ['device-off'] = 'Device turned off',
         ['device-error'] = 'Communication error: %s',
-        ['temperature-set'] = 'Heating temperature set to %.1fº%s',
-        ['temperature-inlet'] = 'Inlet temperature %.1fº%s',
-        ['temperature-outlet'] = 'Outlet temperature %.1fº%s',
-        ['temperature-ambient'] = 'Ambient temperature %.1fº%s',
-    },
-    de = {
-        ['name'] = 'Hewalex Poolwärmepumpe temperatursensor',
-        ['refresh'] = 'Aktualisieren',
-        ['please-wait'] = 'Ein moment bitte...',
-        ['device-updated'] = 'Temperatursensor aktualisiert',
-        ['device-unavailable'] = 'Gerät nicht verfügbar',
-        ['device-off'] = 'Gerät ausgeschaltet',
-        ['device-error'] = 'Kommunikationsfehler: %s',
-        ['temperature-set'] = 'Heiztemperatur eingestellt auf %.1fº%s',
-        ['temperature-inlet'] = 'Einlasstemperatur %.1fº%s',
-        ['temperature-outlet'] = 'Austrittstemperatur %.1fº%s',
-        ['temperature-ambient'] = 'Umgebungstemperatur %.1fº%s',
+
+        ['search-devices'] = 'Search devices',
+        ['searching-devices'] = 'Searching...',
+        ['not-configured'] = 'Device not configured',
+        ['check-logs'] = 'Search complete. Check logs of this device: %s',
+        ['search-row-device'] = '__ DEVICE %s (# %s) - STATE: %s',
+        ['assigning-device'] = 'Automatically assigned device code: %s',
+
+        ['device1-label'] = 'Inlet temperature',
+        ['device2-label'] = 'Outlet temperature',
+        ['device3-label'] = 'Ambient temperature',
+        ['t1'] = 'Setpoint temperature: %.1f º%s',
+        ['t2'] = 'Inlet temperature: %.1f º%s',
+        ['t3'] = 'Outlet temperature: %.1f º%s',
+        ['t4'] = 'Ambient temperature: %.1f º%s',
+        ['fault'] = 'Pump fault: %s'
     }
 }
