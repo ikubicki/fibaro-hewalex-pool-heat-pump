@@ -7,6 +7,10 @@ It does not allow to control timers. You may automate that using HC3 scenes.
 
 Data updates every 30 seconds by default.
 
+### ATTENTION
+
+**I take no responsibility for using this application. You're doing it on your own risk!**
+
 ## Configuration
 
 `Username` - email of AquaTemp account
